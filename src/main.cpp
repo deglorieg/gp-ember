@@ -1,6 +1,12 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
+
+void errorCallback(int i, const char* msg)
+{
+     std::cout << i << msg << std::endl;
+}
+
 int main()
 {
     if (!glfwInit()) {
@@ -9,8 +15,24 @@ int main()
     } else {
         std::cout << "Success" << std::endl;
     }
+    glfwSetErrorCallback(errorCallback);
 
+    GLFWwindow *win;
+    win = glfwCreateWindow (800, 600, "EMBER", NULL, NULL);
+    
+    if(!win)
+	exit(EXIT_FAILURE);
 
-    std::cout << "Hello World!" << std::endl;
+    glfwMakeContextCurrent(win);
+    while (!glfwWindowShouldClose(win)) {
+        glfwSwapBuffers(win);
+        glfwPollEvents();
+	//glfwWaitEvents();
+	glClearColor(1.0f,0.0f,0.5f,1.0f);
+	
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    glfwDestroyWindow(win);
+    glfwTerminate();
     return 0;
 }
