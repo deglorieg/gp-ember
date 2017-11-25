@@ -2,6 +2,7 @@
 #include <epoxy/gl.h>
 #include <epoxy/glx.h>
 #include <GLFW/glfw3.h>
+#include <linmath.h>
 #include <stdlib.h>
 
 void errorCallback(int i, const char* msg)
