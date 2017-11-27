@@ -4,33 +4,35 @@
 #include <GLFW/glfw3.h>
 #include <linmath.h>
 #include <stdlib.h>
+#include "geometry.h" 
+
 static const struct
 {
-    float x, y;
+    float x, y, z;
     float r,g,b;
 } vertices[3] =
 {
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    { 0.6f, -0.4f, 0.f, 1.f, 0.f },
-    { 0.f, 0.6f, 0.f, 0.f, 1.f }
+    { -0.6f, -0.4f, 0.f, 1.f, 0.f, 0.f },
+    {  0.6f, -0.4f, 0.f, 0.f, 1.f, 0.f },
+    {  0.f,   0.6f, 0.f, 0.f, 0.f, 1.f }
 };
 
 static const char* vertexShaderSrc =
 "uniform mat4 MVP;\n"
-"attribute vec3 vCol;\n"
-"attribute vec2 vPos;\n"
-"varying vec3 color;\n"
+"attribute vec3 position;\n"
+"attribute vec3 colour;\n"
+"varying vec3 outColour;\n"
 "void main()\n"
 "{\n"
-"    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n" 
-"    color = vCol;\n"
+"    gl_Position = MVP * vec4(position.x, position.y, 0.0, 1.0);\n" 
+"    outColour = colour;\n"
 "}\n";
 
 static const char* fragmentShaderSrc =
-"varying vec3 color;\n"
+"varying vec3 outColour;\n"
 "void main()\n"
 "{\n"
-"    gl_FragColor = vec4(color, 1.0);\n"
+"    gl_FragColor = vec4(outColour, 1.0);\n"
 "}\n";
 
 void errorCallback(int i, const char* msg)
@@ -57,34 +59,9 @@ int main()
     glfwMakeContextCurrent(win);
     
     // Initialize data
-    GLuint vBuffer, vShader, fragShader, program;
-    glGenBuffers(1, &vBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    vShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vShader, 1, &vertexShaderSrc, NULL);
-    glCompileShader(vShader);
-
-    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragShader, 1, &fragmentShaderSrc, NULL);
-    glCompileShader(fragShader);
-
-    program = glCreateProgram();
-    glAttachShader(program, vShader);
-    glAttachShader(program, fragShader);
-    glLinkProgram(program);
-
-    GLint mvpLoc, vposLoc, vColLoc;
-    mvpLoc = glGetUniformLocation(program, "MVP");
-    vposLoc = glGetAttribLocation(program, "vPos");
-    vColLoc = glGetAttribLocation(program, "vCol");
-
-    glEnableVertexAttribArray(vposLoc);
-    glVertexAttribPointer(vposLoc, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *) 0);
-    glEnableVertexAttribArray(vColLoc);
-    glVertexAttribPointer(vColLoc, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *) (sizeof(float) * 2));
-
+    ember::Geometry triangle;
+    triangle.SetupShader(vertexShaderSrc, fragmentShaderSrc);
+    triangle.SetupVertices(vertices, 3, ember::Geometry::POSITION | ember::Geometry::COLOUR);
     // main render loop
     while (!glfwWindowShouldClose(win)) {
         
@@ -102,12 +79,10 @@ int main()
         mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         mat4x4_mul(mvp, p, m);
 
-        glUseProgram(program);
-    	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, (const GLfloat*) mvp);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glUseProgram(0);
-
-	glfwSwapBuffers(win);
+        triangle.SetUniform("MVP", mvp);
+        triangle.Render();
+	
+        glfwSwapBuffers(win);
         glfwPollEvents();
     }
     glfwDestroyWindow(win);
