@@ -2,6 +2,54 @@
 #define LINMATH_H
 
 #include <math.h>
+#include <cstdlib>
+namespace ember
+{
+    template <typename T>
+    struct vec3_t
+    {
+        typedef T valueType;
+        
+        valueType x, y, z;
+        
+        valueType & operator[](size_t i)
+        {
+            switch(i)
+            {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: return 0; // TODO: what to setup here?
+            }
+        }
+        valueType const & operator[](size_t i) const
+        {
+            switch(i)
+            {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: return 0; // TODO: what to setup here?
+            }
+        }
+
+        explicit vec3_t() : x(0),y(0),z() { }
+        explicit vec3_t(valueType const & x, valueType const & y, valueType const & z) : x(x), y(y), z(z) { }
+                 vec3_t(vec3_t<T> const & copy) : x(copy.x), y(copy.y), z(copy.z) { }
+        explicit vec3_t(valueType const & s) : x(s), y(s), z(s) { }
+    
+        template<typename U, typename V, typename W>
+        explicit vec3_t(U const & x, V const & y, W const & z) : x(x), y(y), z(z) { }
+        template<typename U>
+        explicit vec3_t(vec3_t<U> const & copy) : x(copy.x), y(copy.y), z(copy.z) { } 
+    };
+
+    typedef vec3_t<float> vec3f;
+    typedef vec3_t<int32_t> vec3i;
+    typedef vec3_t<double> vec3d;
+}
+
+
 
 #define LINMATH_H_DEFINE_VEC(n) \
 typedef float vec##n[n]; \
